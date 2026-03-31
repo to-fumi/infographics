@@ -1,0 +1,140 @@
+session: 3
+title: "ブランチ + Pull Request：安全に変更を試す"
+audience: "初心者エンジニア（SPO / PowerApps 経験者）"
+goal: "ブランチの概念を理解し、Pull Requestを通じてチームで安全にコードを統合できるようになる"
+
+slides:
+
+  - id: 1
+    heading: "なぜブランチが必要か"
+    content: |
+      ブランチ＝メインのコードから切り離した「作業スペース」
+
+      ブランチなしの問題：
+        main に直接変更 → 動かなくなったら全員に影響
+        AI が大量生成したコードがいきなり本番に入る
+
+      ブランチありの安心感：
+        ✅ main は常に動く状態をキープ
+        ✅ 実験・修正はブランチ上で自由にできる
+        ✅ 問題があればブランチを捨てるだけ
+        ✅ レビューしてからmainに取り込める
+
+  - id: 2
+    heading: "ブランチのイメージ"
+    content: |
+      main ブランチ（本流）
+        ──●──●──●──────────────→
+                    ↘
+                     feature/login  （作業ブランチ）
+                      ──●──●──●
+                                ↘
+                              レビューOKならmainに統合（merge）
+
+      ポイント：
+        main は壊さない
+        作業は必ずブランチを切ってから始める
+        完成したらPull Requestでレビュー → main にmerge
+
+  - id: 3
+    heading: "git branch / git switch：ブランチを作って移動する"
+    content: |
+      【ブランチ一覧の確認】
+        $ git branch
+        * main   ← * が現在いるブランチ
+
+      【ブランチを作成して移動（これだけ覚えればOK）】
+        $ git switch -c feature/login
+        → feature/login ブランチを作成して移動
+
+      【ブランチを移動するだけ】
+        $ git switch main
+
+      【ブランチ名のつけ方の目安】
+        feature/〇〇   新機能の追加
+        fix/〇〇       バグ修正
+        chore/〇〇     設定変更・雑務
+
+      VSCode：画面左下のブランチ名をクリック → ブランチの作成・切り替えができる
+
+  - id: 4
+    heading: "ブランチで作業してpushする"
+    content: |
+      ブランチを切ったあとは Session 2 と同じ流れ
+
+        $ git switch -c feature/login   ブランチ作成
+        （ファイルを変更）
+        $ git add .
+        $ git commit -m "ログイン画面を追加"
+        $ git push -u origin feature/login   ← ブランチ名を指定
+
+      ⚠️ push 先はブランチ名に合わせる
+         git push -u origin main ではなく
+         git push -u origin feature/login
+
+      2回目以降のpushは git push だけでOK
+
+  - id: 5
+    heading: "Pull Request（PR）とは"
+    content: |
+      「このブランチをmainに取り込んでいいですか？」という依頼
+
+      PRの流れ：
+        ① feature ブランチを GitHub に push
+        ② GitHub 上で「Compare & pull request」ボタンが表示される
+        ③ タイトル・説明を書いてPRを作成
+        ④ チームメンバーがコードをレビュー・コメント
+        ⑤ 承認されたら「Merge pull request」で main に統合
+
+      PRは：
+        ✅ コードレビューの場
+        ✅ 変更の意図を説明する場
+        ✅ CI（自動チェック）が走る場（Session 5 で詳しく）
+
+  - id: 6
+    heading: "良いPRの書き方"
+    content: |
+      レビュアーが理解しやすいPRを書く習慣をつける
+
+      【タイトル】
+        ❌「修正」「変更」
+        ✅「ログイン画面にバリデーション追加」
+
+      【本文に書くと良いこと】
+        - 何のための変更か（目的）
+        - 何を変えたか（概要）
+        - 確認してほしいポイント
+
+      【AIで生成したコードのPR】
+        「AIで生成したコードをベースに修正」と明記する
+        変更量が多い場合はスクリーンショットを添付
+
+  - id: 7
+    heading: "merge後の後片付け"
+    content: |
+      PRがmergeされたらブランチを削除する
+
+      【GitHub上で削除】
+        Merge後に「Delete branch」ボタンが表示される → クリックで削除
+
+      【ローカルでも削除】
+        $ git switch main
+        $ git pull                      ← mainを最新に
+        $ git branch -d feature/login   ← ローカルブランチを削除
+
+      ブランチを溜め込まない習慣をつけると履歴がすっきりする
+
+  - id: 8
+    heading: "Session 3 まとめ"
+    content: |
+      ✅ ブランチ  main を守りながら安全に作業する仕組み
+      ✅ git switch -c  ブランチを作成して移動
+      ✅ push はブランチ名を指定する（初回のみ -u）
+      ✅ Pull Request  チームでレビューして main に統合
+      ✅ merge後はブランチを削除してきれいに保つ
+
+      【AI駆動開発との紐付け】
+        AIが大量にコードを生成する場面こそブランチが効く
+        「試しにAIで作ってみた」→ ブランチで試す → レビューしてからmerge
+
+      次回：コミットを元に戻す（revert / reset）

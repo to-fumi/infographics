@@ -1,0 +1,212 @@
+session: 5
+title: "GitHub Actions + CI：コードの自動チェック"
+audience: "初心者エンジニア（SPO / PowerApps 経験者）"
+goal: "GitHub Actionsの仕組みを理解し、PRに自動チェックが走るCIフローを構築できるようになる"
+
+slides:
+
+  - id: 1
+    heading: "CIとは何か"
+    content: |
+      CI（Continuous Integration：継続的インテグレーション）
+      = コードをpushするたびに自動でチェックを走らせる仕組み
+
+      なぜ必要か：
+        AIが生成したコードはバグ・スタイル崩れ・セキュリティ問題を含むことがある
+        人間がレビューで全部拾うのは限界がある
+
+      CIがあると：
+        ✅ PRを出した瞬間に自動でコードの品質チェックが走る
+        ✅ 問題があればマージ前に気づける
+        ✅ レビュアーはロジックに集中できる
+
+  - id: 2
+    heading: "GitHub Actionsとは"
+    content: |
+      GitHub に組み込まれた自動化ツール
+      リポジトリ内に YAML ファイルを置くだけで動く
+
+      【トリガーの例】
+        - PR を作成・更新したとき
+        - main ブランチに push したとき
+        - 毎日決まった時間に
+
+      【できること（今回使うもの）】
+        コードの静的解析・フォーマットチェック
+        セキュリティスキャン
+        テストの自動実行
+
+      設定ファイルの置き場所：
+        .github/workflows/ファイル名.yml
+
+  - id: 3
+    heading: "ワークフローYAMLの基本構造"
+    content: |
+      .github/workflows/ci.yml
+
+        name: CI                          # ワークフローの名前
+
+        on:                               # いつ実行するか
+          pull_request:                   # PRを作成・更新したとき
+            branches: [main]
+
+        jobs:                             # 何をするか
+          lint:                           # ジョブ名（任意）
+            runs-on: ubuntu-latest        # 実行環境
+
+            steps:                        # 手順
+              - uses: actions/checkout@v4 # リポジトリのコードを取得
+              - name: 処理の名前
+                run: コマンド             # 実行するコマンド
+
+      ポイント：
+        on     → トリガー（いつ）
+        jobs   → 処理のまとまり（何を）
+        steps  → 具体的な手順（どうやって）
+
+  - id: 4
+    heading: "今回導入するツール一覧"
+    content: |
+      【JavaScript / TypeScript】
+        Biome       コードのフォーマット・リント（ESLint+Prettierの代替）
+
+      【CSS】
+        Stylelint   CSSのルール違反・スタイル崩れを検出
+
+      【Python】
+        Ruff        コードのフォーマット・リント（高速）
+        mypy        型アノテーションの整合性チェック
+
+      【セキュリティ】
+        CodeQL      コード内の脆弱性を静的解析（GitHub公式）
+
+      プロジェクトで使う言語に応じて必要なものだけ導入すればOK
+
+  - id: 5
+    heading: "Biome（JS/TS）の設定"
+    content: |
+      .github/workflows/ci.yml に追加するステップ
+
+        - name: Setup Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: '24'
+
+        - name: Install Biome
+          run: npm install --save-dev @biomejs/biome
+
+        - name: Run Biome
+          run: npx biome ci --files-include="**/*.{js,jsx,ts,tsx,json}" .
+
+      biome ci は：
+        フォーマット違反 → エラー
+        リント違反      → エラー
+        問題なし        → 通過
+
+      ローカルでの自動修正：
+        $ npx biome check --write .
+
+  - id: 6
+    heading: "Stylelint（CSS）の設定"
+    content: |
+      .github/workflows/ci.yml に追加するステップ
+
+        - name: Install Stylelint
+          run: npm install --save-dev stylelint stylelint-config-standard
+
+        - name: Run Stylelint
+          run: npx stylelint "**/*.css"
+
+      stylelint.config.js をプロジェクトルートに作成：
+
+        export default {
+          extends: ['stylelint-config-standard'],
+        }
+
+      ローカルでの自動修正：
+        $ npx stylelint "**/*.css" --fix
+
+  - id: 7
+    heading: "Ruff + mypy（Python）の設定"
+    content: |
+      .github/workflows/ci.yml に追加するステップ
+
+        - name: Setup Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.12'
+
+        - name: Install tools
+          run: pip install ruff mypy
+
+        - name: Run Ruff
+          run: ruff check .
+
+        - name: Run mypy
+          run: mypy .
+
+      ローカルでの自動修正：
+        $ ruff check --fix .
+        $ ruff format .
+
+  - id: 8
+    heading: "CodeQL（セキュリティ）とは"
+    content: |
+      GitHub が公式提供するセキュリティ脆弱性の静的解析ツール
+
+      何をチェックするか：
+        - SQLインジェクション・XSSなどの脆弱性
+        - 認証・認可の問題
+        - AIが生成したコードに紛れ込みやすい安全でないパターン
+
+      有効化の方法：
+        リポジトリの「Security」タブ → 「Enable」ボタンをクリックするだけ
+        → GitHub が自動でワークフローを設定してくれる
+
+      結果の確認：
+        「Security」タブ → 「Code scanning alerts」で検出された問題を確認できる
+
+      設定ファイルを自分で書く必要はない
+
+  - id: 9
+    heading: "PRでCIが動く様子"
+    content: |
+      PR を作成すると自動でチェックが走る
+
+        PR作成
+          ↓
+        GitHub Actions が起動
+          ↓
+        ✅ Biome passed
+        ✅ Stylelint passed
+        ✅ Ruff passed
+        ❌ mypy failed  ← 型エラーが検出された
+
+        → マージボタンがブロックされる（設定による）
+
+      対応：
+        ① エラーの内容を「Details」リンクから確認
+        ② ローカルで修正してpush
+        ③ 再度CIが走る → 全部✅になったらマージOK
+
+      レビュアーは「CIが通っている」を前提にロジックのレビューに集中できる
+
+  - id: 10
+    heading: "Session 5 まとめ"
+    content: |
+      ✅ CI = PRのたびに自動でコード品質チェックを走らせる仕組み
+      ✅ GitHub Actions = .github/workflows/ にYAMLを置くだけで動く
+      ✅ Biome       JS/TS のフォーマット・リント
+      ✅ Stylelint   CSS のスタイルチェック
+      ✅ Ruff / mypy Python のリント・型チェック
+      ✅ CodeQL      セキュリティ脆弱性の自動スキャン
+
+      【全5セッションの振り返り】
+        Session 1：セットアップ
+        Session 2：基本ワークフロー（add / commit / push / pull）
+        Session 3：ブランチ + Pull Request
+        Session 4：元に戻す（revert / reset）
+        Session 5：GitHub Actions + CI  ← 今日
+
+      AIが生成したコードをブランチで試し、PRでCIを通し、レビューしてmerge
+      → これが安全なAI駆動開発の基本フロー

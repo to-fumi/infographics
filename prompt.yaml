@@ -1,0 +1,32 @@
+# インフォグラフィック デザインシステム
+# 全スライド共通の固定設定。変更不要。
+
+design:
+  format:
+    aspect_ratio: "16:9（横向き・ランドスケープ）"
+    resolution: "2K（2560×1440px）"
+    canvas_note: "出力が正方形になる場合、白い正方形の中央に16:9の画像を配置。上下それぞれ315pxの余白。コンテンツは中央1440×810pxエリアに収める。画像が端に触れることを禁止。"
+
+  visual:
+    background: "白地に格子状の薄いグレー"
+    text_color: "黒文字"
+    mascot: "かわいいフクロウ"
+
+  style:
+    summary: "要点は付箋（パステルカラー）にテキストをまとめて貼る"
+    concepts: "Gitの概念は小道具で表現（ファイル=紙の束、リポジトリ=収納ボックス、コミット=ラベルを貼って箱に入れる、ブランチ=作業台を分ける）"
+    relations: "対応関係・フロー・因果関係は矢印で明示する"
+    props: "小道具はGitの概念に対応するものだけ。無関係な装飾は入れない"
+    character: "フクロウは各ステップのアクションを実演するキャラクターとして配置"
+
+  header:
+    position: "スライド最上部"
+    layout: "左上にスライドタイトル（24px・太字）、右上にコース名（16px・細字）"
+    background: "なし（帯は使わない）"
+    text_background: "各テキストの直下にパステルカラーのハイライト（蛍光ペン風）"
+    note: "全スライド共通。位置・サイズ・デザインを統一すること"
+
+generation:
+  prompt_language: "プロンプト本文は英語で記述"
+  japanese_text: "付箋・ラベル・吹き出しの日本語テキストは内容をそのまま明記する"
+  closing_note: "末尾に必ず 'ALL text must be EXACTLY as written in Japanese.' を付ける"

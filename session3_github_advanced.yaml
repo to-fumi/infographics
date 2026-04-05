@@ -1,0 +1,229 @@
+session: 3
+title: "GitHub高度活用 + 自動化"
+audience: "初級者エンジニア（PC持ち込みあり）"
+goal: "Branch RuleSet・CodeQL・GitHub Copilot自動レビューを設定し、pushしたら自動で品質チェックが走る環境を作れるようになる"
+
+slides:
+
+  - id: 1
+    heading: "今日やること"
+    infographic: true
+    content: |
+      「仕組みで品質を守る」= 人に依存しない品質保証
+    description: |
+      【メインタイトル】 今日やること — 仕組みで品質を守る
+
+      【レイアウト】 上部に前回の復習バッジ、中央に今日の目標チェックリスト、下部にキーワード強調
+
+      【前回の復習（上部）】
+        チェックラベル: 「✅ チームルールに沿った開発ができる」
+
+      【今日できるようになること（中央）】
+        チェックリスト:
+          ✅ Branch RuleSetでmainを守る設定ができる
+          ✅ GitHub Actionsの仕組みが分かる
+          ✅ CodeQLでセキュリティスキャンを自動化できる
+          ✅ GitHub Copilotに自動レビューさせられる
+
+      【キーワード（下部）】
+        重要テキスト: 「人がレビューを忘れても仕組みが守る」
+        アイコン: フクロウが守り神のように両翼を広げて立っている
+
+  - id: 2
+    heading: "【図解⑦】CI/CDパイプライン"
+    infographic: true
+    description: |
+      【メインタイトル】 CI/CDパイプライン
+
+      【レイアウト】 左から右に流れる工場の組み立てライン（コンベアベルト）。4ゾーン構成
+
+      【ゾーン①：開発者】
+        アイコン: フクロウがノートPCでコードを書き、コンベアに乗せている
+
+      【ゾーン②：GitHub】
+        アイコン: 「push / PR」ラベルの付いたボックスがコンベアを流れている
+
+      【ゾーン③：CI自動実行（メインゾーン）】
+        タイムラインとフローチャート: コンベア上の4つの検査ステーション:
+          検査①「テスト実行」
+          検査②「Lintチェック」
+          検査③「セキュリティスキャン」
+          検査④「ビルド確認」
+        ゾーン出口の分岐:
+          ❌ 不合格 → 赤いランプ＋警告ラベル「マージブロック」
+          ✅ 合格 → 緑のランプ＋次のゾーンへ進む矢印
+
+      【ゾーン④：本番デプロイ】
+        アイコン: 合格ボックスがサーバー（本番環境）に到着している
+
+      【Tipsテキスト（下部）】
+        「人がチェックしなくても仕組みが守ってくれる」
+        「問題を早期発見＝手戻りコストが激減」
+
+  - id: 3
+    heading: "【図解⑧】Branch RuleSet レイヤー構造"
+    infographic: true
+    description: |
+      【メインタイトル】 Branch RuleSet レイヤー構造
+
+      【レイアウト】 外側から内側へのネスト構造（城壁が重なる要塞のイメージ）
+
+      【最外層の城壁：Organization RuleSet】
+        ラベル: 「Organization RuleSet」
+        Tipsテキスト: 「全リポジトリに適用される基本ルール」
+
+      【中間の城壁：Repository RuleSet】
+        ラベル: 「Repository RuleSet」
+        Tipsテキスト: 「このリポジトリ固有のルール」
+
+      【最内側の守られたエリア：対象ブランチ】
+        ラベル: 「対象ブランチ（main / release/*）」
+        チェックリスト（盾のアイコン付き）:
+          ✅ 直接pushを禁止
+          ✅ PRレビュー必須（1名以上）
+          ✅ CIが通らないとマージ不可
+          ✅ 署名済みコミットのみ許可
+
+      【下部ラベル】
+        「設定場所：GitHub → Settings → Rules → Rulesets」
+
+  - id: 4
+    heading: "Branch RuleSet ハンズオン"
+    infographic: true
+    content: |
+      mainブランチを保護する設定をやってみよう
+    description: |
+      【メインタイトル】 Branch RuleSet ハンズオン — mainブランチを保護する
+
+      【レイアウト】 縦5ステップの手順フロー。GitHubのUI操作をアイコンで表現
+
+      【ステップ①】
+        アイコン: GitHubリポジトリのSettings画面
+        ラベル: 「Settings を開く」
+
+      【ステップ②】
+        ラベル: 「Rules → Rulesets → New ruleset」
+
+      【ステップ③】
+        コマンドラベル: 「Ruleset name: protect-main / Enforcement: Active / Target: main」
+
+      【ステップ④】
+        チェックリスト（有効にするルール）:
+          ✅ Restrict creations（直接作成を禁止）
+          ✅ Restrict deletions（削除を禁止）
+          ✅ Require a pull request before merging（Required approvals: 1）
+          ✅ Require status checks to pass（CI必須）
+
+      【ステップ⑤】
+        アイコン: 「Create」ボタンを押すフクロウ
+        チェックラベル: 「これでmainへの直pushが禁止される！」
+
+  - id: 5
+    heading: "【図解⑨】CodeQL スキャンフロー"
+    infographic: true
+    description: |
+      【メインタイトル】 CodeQL セキュリティスキャンフロー
+
+      【レイアウト】 縦5ステップのフロー図。末尾で左右に分岐
+
+      【ステップ①：PR作成 / push】
+        アイコン: フクロウがコードの入った封筒をGitHubに向けて投函している
+
+      【ステップ②：GitHub Actions起動】
+        アイコン: 歯車が自動で回り始めている
+        コマンドラベル: 「.github/workflows/codeql.yml」
+
+      【ステップ③：CodeQLデータベース構築】
+        アイコン: コードの紙束がスキャナーに通され、ファイルキャビネットに変換される
+        Tipsテキスト: 「コードを解析可能な形に変換」
+
+      【ステップ④：脆弱性クエリ実行】
+        アイコン: 虫眼鏡を持った探偵フクロウがコードを検査している
+        重要テキスト: 「SQL injection / XSS / 認証バイパス など」
+
+      【分岐（右下に完成図として）】
+        ❌ 問題あり → 赤い警告サインとブロックゲート。警告ラベル「Security Alertsに表示・PRをブロック」
+        ✅ クリーン → 緑のチェックマークと開いたゲート。チェックラベル「マージ許可」
+
+  - id: 6
+    heading: "CodeQL ハンズオン"
+    infographic: true
+    content: |
+      GitHubのデフォルト設定で有効化する（最短手順）
+    description: |
+      【メインタイトル】 CodeQL ハンズオン
+
+      【レイアウト】 左右2カラム（方法A / 方法B）
+
+      【左カラム：方法A — GitHub UIから有効化（推奨）】
+        ステップ①: アイコン「Securityタブを開く」
+        ステップ②: ラベル「Code scanning → Set up → Default を選択」
+        ステップ③: アイコン「Enable CodeQL ボタンをクリック」
+        チェックラベル: 「.github/workflows/codeql.yml が自動生成される」
+
+      【右カラム：方法B — YAMLを手書き】
+        コードボックス（主要部分）:
+          name: CodeQL
+          on: [push, pull_request]
+          steps:
+            - uses: github/codeql-action/init@v3
+            - uses: github/codeql-action/analyze@v3
+
+      【下部のチェックラベル】
+        「PRを出すたびに自動でセキュリティスキャンが走る！」
+
+  - id: 7
+    heading: "GitHub Copilot 自動レビュー設定"
+    infographic: true
+    content: |
+      CopilotにPRを自動レビューさせる
+    description: |
+      【メインタイトル】 GitHub Copilot 自動レビュー設定
+
+      【レイアウト】 上部に設定手順、下部にcopilot-instructions.mdのカスタマイズ内容
+
+      【上部：設定手順】
+        ステップ①: ラベル「Settings → GitHub Copilot」
+        ステップ②: ラベル「Automatic code review を有効化」
+        アイコン: Copilotロボットがコードを自動でレビューしている
+        チェックラベル: 「PR作成時にCopilotが自動でレビューコメントを付ける」
+
+      【下部：copilot-instructions.mdでカスタマイズ】
+        アイコン: ドキュメントファイル「.github/copilot-instructions.md」
+        チェックリスト（Copilotへの指示内容）:
+          「セキュリティリスク（SQL injection, XSS など）をチェック」
+          「エラーハンドリングの漏れをチェック」
+          「命名規則（camelCase for JS, snake_case for Python）をチェック」
+          「日本語でコメントすること」
+          「修正提案は具体的なコード例を示すこと」
+
+      【Tipsテキスト】
+        「チーム独自のレビュー基準をCopilotに覚えさせられる！」
+
+  - id: 8
+    heading: "全体まとめ：3回を振り返って"
+    infographic: true
+    content: |
+      3回で「個人」→「チーム」→「仕組み」に進化した
+    description: |
+      【メインタイトル】 全体まとめ — 3回を振り返って
+
+      【レイアウト】 左から右に進化する3段階のステージ図。矢印でつなぐ
+
+      【ステージ①：第1回 — 個人が「動かせる」】
+        アイコン: フクロウ1羽がPCで作業してコミットボックスを積み上げている
+        重要テキスト: 「git add / commit / push」
+        Tipsテキスト: 「ブランチを切ってPRを出す」
+
+      【ステージ②：第2回 — チームが「壊れにくい」】
+        アイコン: 複数のフクロウがGitHub Flowのブランチ図の前で協力している
+        重要テキスト: 「GitHub Flow / Conventional Commits」
+        Tipsテキスト: 「PRテンプレート・レビュー文化」
+
+      【ステージ③：第3回 — 仕組みが「自動で守る」】
+        アイコン: 歯車とシールドのアイコン。フクロウが自動化された守護システムの前に立っている
+        重要テキスト: 「Branch RuleSet / CodeQL / Copilot自動レビュー」
+
+      【下部の結論ボックス】
+        重要テキスト: 「pushしたら自動で品質チェックが走り、レビューなしではmainに入らない」
+        Tipsテキスト: 「この状態が現代のチーム開発の基盤」
